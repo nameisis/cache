@@ -83,6 +83,14 @@ class Cache
     }
 
     /**
+     * @return array
+     */
+    public function getAttributes(): array
+    {
+        return $this->attributes;
+    }
+
+    /**
      * @return string|null
      */
     public function getStrategy(): ?string
@@ -100,14 +108,6 @@ class Cache
         $this->strategy = $strategy;
 
         return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public function getAttributes(): array
-    {
-        return $this->attributes;
     }
 
     /**
