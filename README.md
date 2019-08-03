@@ -1,4 +1,8 @@
-# phpsed/cache
+# nameisis/cache
+
+---
+Original author asked me if I would like to take this package over as he doesn't have time to work on it and I said yes.
+---
 
 # README IS NOT UP TO DATE FOR 2.x-dev VERSION!
 
