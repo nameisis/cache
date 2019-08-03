@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Phpsed\Cache;
+namespace Nameisis\Cache;
 
 interface Arrayable
 {

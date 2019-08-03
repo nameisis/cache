@@ -1,23 +1,23 @@
 <?php declare(strict_types = 1);
 
-namespace Phpsed\Cache\DependencyInjection;
+namespace Nameisis\Cache\DependencyInjection;
 
 use Exception;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
-use Vairogs\Utils\Utils\Iter;
+use Vairogs\Utils\Iter;
 
-class PhpsedCacheExtension extends Extension
+class NameisisCacheExtension extends Extension
 {
     /**
      * @var string
      */
-    public const ALIAS = 'phpsed.cache';
+    public const ALIAS = 'nameisis.cache';
 
     /**
      * @var string
      */
-    public const EXTENSION = 'phpsed_cache';
+    public const EXTENSION = 'nameisis_cache';
 
     /**
      * @return string

@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Phpsed\Cache\Annotation;
+namespace Nameisis\Cache\Annotation;
 
 use function array_flip;
 use function array_intersect_key;
@@ -17,7 +17,7 @@ class Cache
     /**
      * @var string
      */
-    private const ALGORITHM = 'sha512';
+    private const ALGORITHM = 'sha256';
 
     public const GET = 'GET';
     public const POST = 'POST';

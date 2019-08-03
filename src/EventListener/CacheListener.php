@@ -1,14 +1,14 @@
 <?php declare(strict_types = 1);
 
-namespace Phpsed\Cache\EventListener;
+namespace Nameisis\Cache\EventListener;
 
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\EntityManagerInterface;
-use Phpsed\Cache\Annotation\Cache;
-use Phpsed\Cache\Arrayable;
-use Phpsed\Cache\DependencyInjection\PhpsedCacheExtension;
-use Phpsed\Cache\PhpsedCache;
+use Nameisis\Cache\Annotation\Cache;
+use Nameisis\Cache\Arrayable;
+use Nameisis\Cache\DependencyInjection\NameisisCacheExtension;
+use Nameisis\Cache\NameisisCache;
 use Predis\Client;
 use Psr\Cache\InvalidArgumentException;
 use ReflectionClass;
@@ -80,7 +80,7 @@ class CacheListener implements EventSubscriberInterface
     public function __construct(
         Reader $reader, ContainerInterface $container, TokenStorageInterface $storage, ...$providers
     ) {
-        $this->enabled = $container->getParameter(sprintf('%s.enabled', PhpsedCacheExtension::ALIAS));
+        $this->enabled = $container->getParameter(sprintf('%s.enabled', NameisisCacheExtension::ALIAS));
         if ($this->enabled) {
             $this->providers = $providers;
             $this->reader = $reader;
@@ -102,7 +102,7 @@ class CacheListener implements EventSubscriberInterface
             if ($provider instanceof Client) {
                 $adapters[] = new RedisAdapter($provider, '', 0);
             } elseif ($provider instanceof EntityManagerInterface) {
-                $table = sprintf('%s_items', PhpsedCacheExtension::EXTENSION);
+                $table = sprintf('%s_items', NameisisCacheExtension::EXTENSION);
                 $adapter = new PdoAdapter($provider->getConnection(), '', 0, ['db_table' => $table]);
                 $schema = $provider->getConnection()->getSchemaManager();
                 if (!$schema->tablesExist([$table])) {
@@ -147,7 +147,7 @@ class CacheListener implements EventSubscriberInterface
             /* @var $annotation Cache */
             $response = $this->getCache($annotation->getKey($event->getRequest()->get(self::ROUTE)));
             if (null !== $response) {
-                $event->setController(function () use (
+                $event->setController(static function () use (
                     $response
                 ) {
                     return $response;
@@ -241,9 +241,9 @@ class CacheListener implements EventSubscriberInterface
                     }
                     break;
             }
-
-            return $input;
         }
+
+        return $input;
     }
 
     /**
@@ -274,10 +274,10 @@ class CacheListener implements EventSubscriberInterface
             return;
         }
 
-        $disabled = $event->getRequest()->headers->get(PhpsedCache::CACHE_HEADER);
+        $disabled = $event->getRequest()->headers->get(NameisisCache::CACHE_HEADER);
         if (null !== $disabled) {
             $headers = array_map('trim', explode(',', $disabled));
-            if (in_array(PhpsedCache::DISABLE_CACHE, $headers, true) && $annotation = $this->getAnnotation($event)) {
+            if (in_array(NameisisCache::DISABLE_CACHE, $headers, true) && $annotation = $this->getAnnotation($event)) {
                 $annotation->setData($this->getAttributes($event));
                 $key = $annotation->getKey($event->getRequest()->get(self::ROUTE));
                 $this->client->deleteItem($key);

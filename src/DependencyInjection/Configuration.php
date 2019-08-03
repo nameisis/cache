@@ -1,10 +1,9 @@
 <?php declare(strict_types = 1);
 
-namespace Phpsed\Cache\DependencyInjection;
+namespace Nameisis\Cache\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
-use Symfony\Component\HttpKernel\Kernel;
 
 class Configuration implements ConfigurationInterface
 {
@@ -26,14 +25,8 @@ class Configuration implements ConfigurationInterface
      */
     public function getConfigTreeBuilder(): TreeBuilder
     {
-
-        if (Kernel::VERSION_ID >= 40200) {
-            $treeBuilder = new TreeBuilder($this->getAlias());
-            $node = $treeBuilder->getRootNode();
-        } else {
-            $treeBuilder = new TreeBuilder();
-            $node = $treeBuilder->root($this->getAlias());
-        }
+        $treeBuilder = new TreeBuilder($this->getAlias());
+        $node = $treeBuilder->getRootNode();
 
         // @formatter:off
         $node
