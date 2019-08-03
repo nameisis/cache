@@ -77,9 +77,8 @@ class CacheListener implements EventSubscriberInterface
      *
      * @throws DBALException
      */
-    public function __construct(
-        Reader $reader, ContainerInterface $container, TokenStorageInterface $storage, ...$providers
-    ) {
+    public function __construct(Reader $reader, ContainerInterface $container, TokenStorageInterface $storage, ...$providers)
+    {
         $this->enabled = $container->getParameter(sprintf('%s.enabled', NameisisCacheExtension::ALIAS));
         if ($this->enabled) {
             $this->providers = $providers;
@@ -105,10 +104,16 @@ class CacheListener implements EventSubscriberInterface
                 $table = sprintf('%s_items', NameisisCacheExtension::EXTENSION);
                 $adapter = new PdoAdapter($provider->getConnection(), '', 0, ['db_table' => $table]);
                 $schema = $provider->getConnection()->getSchemaManager();
+
                 if (!$schema->tablesExist([$table])) {
                     $adapter->createTable();
                 }
-                $adapters[] = $adapter;
+
+                if ($schema->tablesExist([$table])) {
+                    $adapters[] = $adapter;
+                } else {
+                    throw DBALException::invalidTableName($table);
+                }
             }
         }
 
@@ -220,13 +225,13 @@ class CacheListener implements EventSubscriberInterface
     {
         $input = [];
         if ($annotation = $this->getAnnotation($event)) {
-            $req = $event->getRequest();
+            $request = $event->getRequest();
             switch ($annotation->getStrategy()) {
                 case Cache::GET:
-                    $input = $req->attributes->get('_route_params') + $req->query->all();
+                    $input = $request->attributes->get('_route_params') + $request->query->all();
                     break;
                 case Cache::POST:
-                    $input = $req->request->all();
+                    $input = $request->request->all();
                     break;
                 case Cache::USER:
                     if ($this->storage->getToken() && $this->storage->getToken()->getUser() instanceof Arrayable) {
@@ -235,7 +240,7 @@ class CacheListener implements EventSubscriberInterface
                     break;
                 case Cache::MIXED:
                 default:
-                    $input = $req->attributes->get('_route_params') + $req->query->all() + $req->request->all();
+                    $input = $request->attributes->get('_route_params') + $request->query->all() + $request->request->all();
                     if ($this->storage->getToken() && $this->storage->getToken()->getUser() instanceof Arrayable) {
                         $input += $this->storage->getToken()->getUser()->toArray();
                     }
@@ -314,9 +319,8 @@ class CacheListener implements EventSubscriberInterface
      *
      * @throws InvalidArgumentException
      */
-    private function setCache(
-        string $key, $value, ?int $expires
-    ): void {
+    private function setCache(string $key, $value, ?int $expires): void
+    {
         $cache = $this->client->getItem($key);
         $cache->set($value);
         $cache->expiresAfter($expires);
