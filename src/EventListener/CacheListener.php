@@ -77,7 +77,7 @@ class CacheListener implements EventSubscriberInterface
      */
     public function __construct(Reader $reader, ContainerInterface $container, ?TokenStorageInterface $storage, ...$providers)
     {
-        $this->enabled = $container->getParameter(sprintf('%s.enabled', NameisisCacheExtension::ALIAS));
+        $this->enabled = $container->getParameter(sprintf('%s.enabled', NameisisCacheExtension::EXTENSION));
         if ($this->enabled) {
             $this->providers = $providers;
             $this->reader = $reader;
