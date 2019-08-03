@@ -58,7 +58,7 @@ class CacheListener implements EventSubscriberInterface
     protected $enabled;
 
     /**
-     * @var TokenStorageInterface
+     * @var null|TokenStorageInterface
      */
     protected $storage;
 
@@ -70,12 +70,12 @@ class CacheListener implements EventSubscriberInterface
     /**
      * @param Reader $reader
      * @param ContainerInterface $container
-     * @param TokenStorageInterface $storage
+     * @param null|TokenStorageInterface $storage
      * @param array $providers
      *
      * @throws DBALException
      */
-    public function __construct(Reader $reader, ContainerInterface $container, TokenStorageInterface $storage, ...$providers)
+    public function __construct(Reader $reader, ContainerInterface $container, ?TokenStorageInterface $storage, ...$providers)
     {
         $this->enabled = $container->getParameter(sprintf('%s.enabled', NameisisCacheExtension::ALIAS));
         if ($this->enabled) {
@@ -230,14 +230,14 @@ class CacheListener implements EventSubscriberInterface
                     $input = $request->request->all();
                     break;
                 case Cache::USER:
-                    if ($this->storage->getToken() && $this->storage->getToken()->getUser() instanceof Arrayable) {
+                    if (null !== $this->storage && $this->storage->getToken() && $this->storage->getToken()->getUser() instanceof Arrayable) {
                         $input = $this->storage->getToken()->getUser()->toArray();
                     }
                     break;
                 case Cache::MIXED:
                 default:
                     $input = $request->attributes->get('_route_params') + $request->query->all() + $request->request->all();
-                    if ($this->storage->getToken() && $this->storage->getToken()->getUser() instanceof Arrayable) {
+                    if (null !== $this->storage && $this->storage->getToken() && $this->storage->getToken()->getUser() instanceof Arrayable) {
                         $input += $this->storage->getToken()->getUser()->toArray();
                     }
                     break;
@@ -250,7 +250,7 @@ class CacheListener implements EventSubscriberInterface
     /**
      * @param $key
      *
-     * @return mixed|null
+     * @return null|mixed
      * @throws InvalidArgumentException
      */
     private function getCache($key)
@@ -311,7 +311,7 @@ class CacheListener implements EventSubscriberInterface
     /**
      * @param string $key
      * @param $value
-     * @param int|null $expires
+     * @param null|int $expires
      *
      * @throws InvalidArgumentException
      */

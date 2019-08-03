@@ -67,7 +67,7 @@ class Cache
     }
 
     /**
-     * @return array|string|null
+     * @return null|array|string
      */
     public function getData()
     {
@@ -95,7 +95,7 @@ class Cache
     }
 
     /**
-     * @return string|null
+     * @return null|string
      */
     public function getStrategy(): ?string
     {
@@ -103,7 +103,7 @@ class Cache
     }
 
     /**
-     * @param string|null $strategy
+     * @param null|string $strategy
      *
      * @return Cache
      */
@@ -115,7 +115,7 @@ class Cache
     }
 
     /**
-     * @return int|null
+     * @return null|int
      */
     public function getExpires(): ?int
     {
