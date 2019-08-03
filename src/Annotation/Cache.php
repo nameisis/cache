@@ -76,10 +76,14 @@ class Cache
 
     /**
      * @param $data
+     *
+     * @return Cache
      */
-    public function setData($data): void
+    public function setData($data): Cache
     {
         $this->data = $data;
+
+        return $this;
     }
 
     /**
