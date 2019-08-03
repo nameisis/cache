@@ -68,8 +68,6 @@ class CacheListener implements EventSubscriberInterface
     protected $providers;
 
     /**
-     * CacheListener constructor.
-     *
      * @param Reader $reader
      * @param ContainerInterface $container
      * @param TokenStorageInterface $storage
@@ -101,9 +99,9 @@ class CacheListener implements EventSubscriberInterface
             if ($provider instanceof Client) {
                 $adapters[] = new RedisAdapter($provider, '', 0);
             } elseif ($provider instanceof EntityManagerInterface) {
-                $table = sprintf('%s_items', NameisisCacheExtension::EXTENSION);
-                $adapter = new PdoAdapter($provider->getConnection(), '', 0, ['db_table' => $table]);
+                $table = sprintf('%s_items', NameisisCacheExtension::ALIAS);
                 $schema = $provider->getConnection()->getSchemaManager();
+                $adapter = new PdoAdapter($provider->getConnection(), '', 0, ['db_table' => $table]);
 
                 if (!$schema->tablesExist([$table])) {
                     $adapter->createTable();
@@ -152,9 +150,7 @@ class CacheListener implements EventSubscriberInterface
             /* @var $annotation Cache */
             $response = $this->getCache($annotation->getKey($event->getRequest()->get(self::ROUTE)));
             if (null !== $response) {
-                $event->setController(static function () use (
-                    $response
-                ) {
+                $event->setController(static function () use ($response) {
                     return $response;
                 });
             }
@@ -190,7 +186,7 @@ class CacheListener implements EventSubscriberInterface
      */
     private function getController(KernelEvent $event): array
     {
-        if (is_array($controller = explode('::', $event->getRequest()->get('_controller'))) && isset($controller[1])) {
+        if (is_array($controller = explode('::', $event->getRequest()->get('_controller'), 2)) && isset($controller[1])) {
             return $controller;
         }
 
@@ -200,15 +196,15 @@ class CacheListener implements EventSubscriberInterface
     /**
      * @param KernelEvent $event
      *
-     * @return mixed
+     * @return null|object
      * @throws ReflectionException
      */
-    private function getAnnotation(KernelEvent $event): ?Cache
+    private function getAnnotation(KernelEvent $event): ?object
     {
         $controller = $this->getController($event);
-        $controllerClass = new ReflectionClass($controller[0]);
+        $controllerClass = new ReflectionClass(reset($controller));
 
-        if ($method = $controllerClass->getMethod($controller[1])) {
+        if ($method = $controllerClass->getMethod(end($controller))) {
             return $this->reader->getMethodAnnotation($method, Cache::class);
         }
 
