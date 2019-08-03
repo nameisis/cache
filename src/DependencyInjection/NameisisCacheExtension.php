@@ -12,19 +12,19 @@ class NameisisCacheExtension extends Extension
     /**
      * @var string
      */
-    public const ALIAS = 'nameisis.cache';
+    public const EXTENSION = 'nameisis.cache';
 
     /**
      * @var string
      */
-    public const EXTENSION = 'nameisis_cache';
+    public const ALIAS = 'nameisis_cache';
 
     /**
      * @return string
      */
     public function getAlias(): string
     {
-        return self::EXTENSION;
+        return self::ALIAS;
     }
 
     /**
@@ -38,7 +38,7 @@ class NameisisCacheExtension extends Extension
         $configuration = new Configuration($this->getAlias());
         $this->processConfiguration($configuration, $configs);
 
-        foreach (Iter::makeOneDimension($configs[0], self::ALIAS) as $key => $value) {
+        foreach (Iter::makeOneDimension(reset($configs), self::EXTENSION) as $key => $value) {
             $container->setParameter($key, $value);
         }
     }
