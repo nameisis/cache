@@ -6,20 +6,20 @@ Original author asked me if I would like to take this package over as he doesn't
 
 # README IS NOT UP TO DATE FOR 2.x-dev VERSION!
 
-[![Latest Stable Version](https://poser.pugx.org/phpsed/cache/v/stable?format=flat-square)](https://packagist.org/packages/phpsed/cache)
-[![Latest Unstable Version](https://poser.pugx.org/phpsed/cache/v/unstable?format=flat-square)](https://packagist.org/packages/phpsed/cache)
-[![License](https://poser.pugx.org/phpsed/cache/license?format=flat-square)](https://packagist.org/packages/phpsed/cache)
-[![Total Downloads](https://poser.pugx.org/phpsed/cache/downloads?format=flat-square)](https://packagist.org/packages/phpsed/cache)  
+[![Latest Stable Version](https://poser.pugx.org/nameisis/cache/v/stable?format=flat-square)](https://packagist.org/packages/nameisis/cache)
+[![Latest Unstable Version](https://poser.pugx.org/nameisis/cache/v/unstable?format=flat-square)](https://packagist.org/packages/nameisis/cache)
+[![License](https://poser.pugx.org/nameisis/cache/license?format=flat-square)](https://packagist.org/packages/nameisis/cache)
+[![Total Downloads](https://poser.pugx.org/nameisis/cache/downloads?format=flat-square)](https://packagist.org/packages/nameisis/cache)  
 
-## Someone made Medium article about this repository, check it out [here][2]!
+## I made Medium article about this repository when it was created by original author, check it out [here][2]!
 
-Phpsed cache is annotation based controller response cache for Symfony framework.
+Nameisis cache is annotation based controller response cache for Symfony framework.
 It generates route specific key from GET and POST parameters and saves it in provided cache clients.  
 
 Currently supported clients are Predis and DoctrineOrm.  
 ***
 ```yaml
-phpsed_cache:
+nameisis_cache:
     enabled: FALSE|true
     providers:
         - snc_redis.session
@@ -32,13 +32,13 @@ Predis client from snc/redis-bundle => snc_redis.session and Doctrine entity man
 
 If **enabled** parameters is set as true, at least one valid provider must be provided.
 
-Phpsed\Cache uses Symfony\Cache [ChainAdapter][1]
+Nameisis\Cache uses Symfony\Cache [ChainAdapter][1]
 ```text
 When an item is not found in the first adapter but is found in the next ones, this adapter ensures that the fetched item is saved to all the adapters where it was previously missing.
 ```
 ***
 ```php
-use Phpsed\Cache\Annotation\Cache;
+use Nameisis\Cache\Annotation\Cache;
 use Symfony\Component\Routing\Annotation\Route;
 
 @Route("/{id}", name = "default", defaults = {"id" = 1}, methods = {"GET", "POST"})
@@ -61,10 +61,10 @@ only given parameters will be used in cache key.
 Only valid attributes will be used in creation of key. If none of given attributes exist, key will be made without any parameters.
 ***
 ```yaml
-PS-CACHE: PS-CACHE-DISABLE
+N-CACHE: N-CACHE-DISABLE
 ```
 In order to invalidate and delete the cache for endpoint, you must call this endpoint with specific header.
-For this you need to set **PS-CACHE** header with **PS-CACHE-DISABLE** value.
+For this you need to set **N-CACHE** header with **N-CACHE-DISABLE** value.
 
 [1]: https://symfony.com/doc/current/components/cache/adapters/chain_adapter.html
 [2]: https://medium.com/@k0d3r1s/phpsed-cache-423d0fefa68
