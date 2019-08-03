@@ -1,10 +1,11 @@
 {
-    "name": "phpsed/cache",
+    "name": "nameisis/cache",
     "description": "Symfony response cache",
     "license": "MIT",
     "type": "symfony-bundle",
     "keywords": [
         "phpsed",
+        "nameisis",
         "cache",
         "symfony",
         "redis",
@@ -14,24 +15,29 @@
         {
             "name": "phpsed",
             "homepage": "https://github.com/phpsed",
+            "role": "Author"
+        },
+        {
+            "name": "k0d3r1s",
+            "homepage": "https://github.com/k0d3r1s",
             "role": "Maintainer"
         }
     ],
     "require": {
-        "php": "^7.1.3",
-        "symfony/cache": "~4.2",
-        "symfony/config": "~4.2",
-        "symfony/dependency-injection": "~4.2",
-        "symfony/event-dispatcher": "~4.2",
-        "symfony/http-foundation": "~4.2",
-        "symfony/http-kernel": "~4.2",
-        "symfony/security": "~4.2",
+        "php": "^7.2.9",
+        "symfony/cache": "~4.3",
+        "symfony/config": "~4.3",
+        "symfony/dependency-injection": "~4.3",
+        "symfony/event-dispatcher": "~4.3",
+        "symfony/http-foundation": "~4.3",
+        "symfony/http-kernel": "~4.3",
+        "symfony/security": "~4.3",
         "doctrine/annotations": "~1.6",
         "doctrine/dbal": "~2.6",
         "doctrine/orm": "~2.6",
         "predis/predis": "~1.1",
         "psr/cache": "^1",
-        "vairogs/vairogs-utils": "~1.0"
+        "vairogs/vairogs-utils": "2.x-dev"
     },
     "suggest": {
         "snc/redis-bundle": "For easier Predis client configuration"
