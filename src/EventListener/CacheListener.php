@@ -3,19 +3,15 @@
 namespace Nameisis\Cache\EventListener;
 
 use Doctrine\Common\Annotations\Reader;
-use Doctrine\DBAL\DBALException;
-use Doctrine\ORM\EntityManagerInterface;
 use JsonSerializable;
 use Nameisis\Cache\Annotation\Cache;
 use Nameisis\Cache\DependencyInjection\NameisisCacheExtension;
 use Nameisis\Cache\NameisisCache;
-use Predis\Client;
+use Nameisis\Cache\Provider\ProviderInterface;
 use Psr\Cache\InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\Cache\Adapter\ChainAdapter;
-use Symfony\Component\Cache\Adapter\PdoAdapter;
-use Symfony\Component\Cache\Adapter\RedisAdapter;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
@@ -72,8 +68,6 @@ class CacheListener implements EventSubscriberInterface
      * @param ContainerInterface $container
      * @param null|TokenStorageInterface $storage
      * @param array $providers
-     *
-     * @throws DBALException
      */
     public function __construct(Reader $reader, ContainerInterface $container, ?TokenStorageInterface $storage, ...$providers)
     {
@@ -89,30 +83,14 @@ class CacheListener implements EventSubscriberInterface
 
     /**
      * @return array
-     * @throws DBALException
      */
     private function createAdapters(): array
     {
         $adapters = [];
 
         foreach ($this->providers as $provider) {
-            if ($provider instanceof Client) {
-                $adapters[] = new RedisAdapter($provider, '', 0);
-            } elseif ($provider instanceof EntityManagerInterface) {
-                $table = sprintf('%s_items', NameisisCacheExtension::ALIAS);
-                $schema = $provider->getConnection()->getSchemaManager();
-                $adapter = new PdoAdapter($provider->getConnection(), '', 0, ['db_table' => $table]);
-
-                if (!$schema->tablesExist([$table])) {
-                    $adapter->createTable();
-                }
-
-                if ($schema->tablesExist([$table])) {
-                    $adapters[] = $adapter;
-                } else {
-                    throw DBALException::invalidTableName($table);
-                }
-            }
+            /** @var ProviderInterface $provider */
+            $adapters[] = $provider->getAdapter();
         }
 
         return $adapters;
