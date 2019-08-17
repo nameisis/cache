@@ -11,12 +11,17 @@ class NameisisCache extends Bundle
     /**
      * @var string
      */
-    public const CACHE_HEADER = 'N-CACHE';
+    public const CACHE_HEADER = 'NameisisCache';
 
     /**
      * @var string
      */
-    public const DISABLE_CACHE = 'N-CACHE-DISABLE';
+    public const INVALIDATE_CACHE = 'invalidate';
+
+    /**
+     * @var string
+     */
+    public const SKIP_CACHE = 'skip';
 
     /**
      * @return NameisisCacheExtension|ExtensionInterface|null

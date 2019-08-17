@@ -24,7 +24,6 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use function array_map;
 use function class_exists;
 use function explode;
 use function in_array;
@@ -275,14 +274,14 @@ class CacheListener implements EventSubscriberInterface
             return;
         }
 
-        $disabled = $event->getRequest()->headers->get(NameisisCache::CACHE_HEADER);
-        if (null !== $disabled) {
-            $headers = array_map('trim', explode(',', $disabled));
-            if (in_array(NameisisCache::DISABLE_CACHE, $headers, true) && $annotation = $this->getAnnotation($event)) {
-                $annotation->setData($this->getAttributes($event));
-                $key = $annotation->getKey($event->getRequest()->get(self::ROUTE));
-                $this->client->deleteItem($key);
-            }
+        $invalidate = $event->getRequest()->headers->get(NameisisCache::CACHE_HEADER);
+        if ((null !== $invalidate) && in_array($invalidate, [
+                NameisisCache::INVALIDATE_CACHE,
+                NameisisCache::SKIP_CACHE,
+            ], true) && $annotation = $this->getAnnotation($event)) {
+            $annotation->setData($this->getAttributes($event));
+            $key = $annotation->getKey($event->getRequest()->get(self::ROUTE));
+            $this->client->deleteItem($key);
         }
     }
 
@@ -302,7 +301,8 @@ class CacheListener implements EventSubscriberInterface
             $annotation->setData($this->getAttributes($event));
             $key = $annotation->getKey($event->getRequest()->get(self::ROUTE));
             $cache = $this->getCache($key);
-            if (null === $cache) {
+            $skip = $event->getRequest()->headers->get(NameisisCache::CACHE_HEADER) === NameisisCache::SKIP_CACHE;
+            if (null === $cache && !$skip) {
                 $this->setCache($key, $event->getResponse(), $annotation->getExpires());
             }
         }
