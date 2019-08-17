@@ -298,7 +298,7 @@ class CacheListener implements EventSubscriberInterface
         }
 
         $invalidate = $event->getRequest()->headers->get(NameisisCache::CACHE_HEADER);
-        if ((null !== $invalidate) && in_array($invalidate, [
+        if (null !== $invalidate && in_array($invalidate, [
                 NameisisCache::INVALIDATE_CACHE,
                 NameisisCache::SKIP_CACHE,
             ], true) && $annotation = $this->getAnnotation($event)) {
@@ -324,7 +324,7 @@ class CacheListener implements EventSubscriberInterface
             $annotation->setData($this->getAttributes($event));
             $key = $annotation->getKey($event->getRequest()->get(self::ROUTE));
             $cache = $this->getCache($key);
-            $skip = $event->getRequest()->headers->get(NameisisCache::CACHE_HEADER) === NameisisCache::SKIP_CACHE;
+            $skip = NameisisCache::SKIP_CACHE === $event->getRequest()->headers->get(NameisisCache::CACHE_HEADER);
             if (null === $cache && !$skip) {
                 $this->setCache($key, $event->getResponse(), $annotation->getExpires());
             }
