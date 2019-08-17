@@ -2,8 +2,8 @@
 
 namespace Nameisis\Cache\Annotation;
 
-use function array_flip;
-use function array_intersect_key;
+use Vairogs\Utils\Exception\VairogsException;
+use Vairogs\Utils\Iter;
 use function hash;
 use function http_build_query;
 use function is_array;
@@ -48,6 +48,7 @@ class Cache
      * @param string $prefix
      *
      * @return string
+     * @throws VairogsException
      */
     public function getKey(string $prefix = ''): string
     {
@@ -56,8 +57,8 @@ class Cache
             $key = $value ?: '';
         } else {
             if (!empty($this->getAttributes())) {
-                $flipped = array_flip($this->getAttributes());
-                $value = array_intersect_key($value, $flipped);
+                $flipped = Iter::arrayFlipRecursive($this->getAttributes());
+                $value = Iter::arrayIntersectKeyRecursive($value, $flipped);
             }
 
             $key = str_replace('=', '_', http_build_query($value, '', '_'));
