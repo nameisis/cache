@@ -59,7 +59,7 @@ class CacheListener implements EventSubscriberInterface
     protected $storage;
 
     /**
-     * @var array
+     * @var ProviderInterface[]
      */
     protected $providers;
 
@@ -75,9 +75,9 @@ class CacheListener implements EventSubscriberInterface
         if ($this->enabled) {
             $this->providers = $providers;
             $this->reader = $reader;
+            $this->storage = $storage;
             $this->client = new ChainAdapter($this->createAdapters());
             $this->client->prune();
-            $this->storage = $storage;
         }
     }
 
