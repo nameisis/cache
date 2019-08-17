@@ -3,7 +3,6 @@
 Original author asked me if I would like to take this package over as he doesn't have time to work on it and I said yes.
 ---
 
-# README IS NOT UP TO DATE FOR 2.x-dev VERSION!
 
 [![Latest Stable Version](https://poser.pugx.org/nameisis/cache/v/stable?format=flat-square)](https://packagist.org/packages/nameisis/cache)
 [![Latest Unstable Version](https://poser.pugx.org/nameisis/cache/v/unstable?format=flat-square)](https://packagist.org/packages/nameisis/cache)
@@ -18,18 +17,30 @@ It generates route specific key from GET and POST parameters and saves it in pro
 Currently supported clients are Predis and DoctrineOrm.  
 ***
 ```yaml
+# config/packages/nameisis_cache.yaml
 nameisis_cache:
     enabled: FALSE|true
-    providers:
-        - snc_redis.session
-        - doctrine.orm.default_entity_manager
+
+services:
+    Nameisis\Cache\EventListener\CacheListener:
+        arguments:
+            - '@annotation_reader'
+            - '@service_container'
+            - null                                      #ToKenStorageInterface
+            - '@snc_redis.session'                      #provider_1
+            - '@doctrine.orm.default_entity_manager'    #provider_2
+            - ...                                       #provider_n
+        tags:
+            -   name: kernel.event_subscriber
 ```
-**enabled** parameter by default is set to false, which means that @Cache annotation won't work without setting it to true.  
-**providers** must be either Predis or Doctrine Orm clients.  
+**enabled** parameter by default is set to false, which means that @Cache annotation won't work without setting it to true. 
+
+2.0 version of this bundle have provider configuration set up through service instead of parameter. 
+
 In the example above, two providers are provided:   
 Predis client from snc/redis-bundle => snc_redis.session and Doctrine entity manager => doctrine.orm.default_entity_manager.  
 
-If **enabled** parameters is set as true, at least one valid provider must be provided.
+If **enabled** parameter is set as true, at least one valid provider must be provided.
 
 Nameisis\Cache uses Symfony\Cache [ChainAdapter][1]
 ```text
@@ -50,7 +61,19 @@ By default @Cache annotation doesn't need any parameters.
 Without **attributes** parameter, cache key for route is made from all of GET and POST parameters.  
 Without **expires** parameter, cache is saved for unlimited ttl which means that it will be valid until deleted.  
 
-If the same parameter exist in GET and POST, value of **GET** parameter will be used.   
+If the same parameter exist in multiple methods, value of **GET** parameter will be used.   
+
+This bundle supports 4 different methods for saving cache:
+* GET  
+* POST
+* USER
+* MIXED
+
+*GET* and *POST* are pretty obvious, cache are made from GET or POST parameters.  
+*USER* method has to have TokenStorageInterface service provided in defined service. This method allows saving cache for 
+any parameter that authorized user have, for example, id or email.  
+*MIXED* method just mixes all other methods, so you don't have to list all needed methods like GET, POST, USER, but just use one 
+overall method.  
 
 @Cache annotation takes two optional parameters: expires and attributes.  
 **expires** sets maximum ttl for given cache.   
@@ -60,10 +83,13 @@ only given parameters will be used in cache key.
 Only valid attributes will be used in creation of key. If none of given attributes exist, key will be made without any parameters.
 ***
 ```yaml
-N-CACHE: N-CACHE-DISABLE
+NameisisCache: invalidate
 ```
 In order to invalidate and delete the cache for endpoint, you must call this endpoint with specific header.
-For this you need to set **N-CACHE** header with **N-CACHE-DISABLE** value.
+For this you need to set **NameisisCache** header with **invalidate** value.  
+Passing invalidate value to header deletes existing cache and writes a new one.  
+
+If in **NameisisCache** header you pass value **skip** instead, cache is invalidated but new cache is not created.  
 
 [1]: https://symfony.com/doc/current/components/cache/adapters/chain_adapter.html
 [2]: https://medium.com/@k0d3r1s/phpsed-cache-423d0fefa68
