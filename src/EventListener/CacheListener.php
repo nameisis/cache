@@ -23,6 +23,7 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Vairogs\Utils\Exception\VairogsException;
 use Vairogs\Utils\Interfaces\Arrayable;
 use function class_exists;
 use function explode;
@@ -137,6 +138,7 @@ class CacheListener implements EventSubscriberInterface
      *
      * @throws InvalidArgumentException
      * @throws ReflectionException
+     * @throws VairogsException
      */
     public function onKernelController(ControllerEvent $event): void
     {
