@@ -8,6 +8,7 @@ use Nameisis\Cache\Annotation\Cache;
 use Nameisis\Cache\DependencyInjection\NameisisCacheExtension;
 use Nameisis\Cache\NameisisCache;
 use Nameisis\Cache\Provider\ProviderInterface;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
@@ -82,7 +83,7 @@ class CacheListener implements EventSubscriberInterface
     }
 
     /**
-     * @return array
+     * @return CacheItemPoolInterface[]
      */
     private function createAdapters(): array
     {

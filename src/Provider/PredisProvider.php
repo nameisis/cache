@@ -4,10 +4,10 @@ namespace Nameisis\Cache\Provider;
 
 use Predis\Client;
 use Predis\ClientInterface;
-use Symfony\Component\Cache\Adapter\AbstractAdapter;
+use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
 
-class RedisProvider implements ProviderInterface
+class PredisProvider implements ProviderInterface
 {
     /**
      * @var Client
@@ -23,9 +23,9 @@ class RedisProvider implements ProviderInterface
     }
 
     /**
-     * @return AbstractAdapter
+     * @return CacheItemPoolInterface
      */
-    public function getAdapter(): AbstractAdapter
+    public function getAdapter(): CacheItemPoolInterface
     {
         return new RedisAdapter($this->client, '', 0);
     }

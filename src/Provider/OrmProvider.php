@@ -5,7 +5,7 @@ namespace Nameisis\Cache\Provider;
 use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\EntityManagerInterface;
 use Nameisis\Cache\DependencyInjection\NameisisCacheExtension;
-use Symfony\Component\Cache\Adapter\AbstractAdapter;
+use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Cache\Adapter\PdoAdapter;
 use function sprintf;
 
@@ -25,10 +25,10 @@ class OrmProvider implements ProviderInterface
     }
 
     /**
-     * @return AbstractAdapter
+     * @return CacheItemPoolInterface
      * @throws DBALException
      */
-    public function getAdapter(): AbstractAdapter
+    public function getAdapter(): CacheItemPoolInterface
     {
         $table = sprintf('%s_items', NameisisCacheExtension::ALIAS);
         $schema = $this->manager->getConnection()->getSchemaManager();

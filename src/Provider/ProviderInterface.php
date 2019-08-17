@@ -2,9 +2,9 @@
 
 namespace Nameisis\Cache\Provider;
 
-use Symfony\Component\Cache\Adapter\AbstractAdapter;
+use Psr\Cache\CacheItemPoolInterface;
 
 interface ProviderInterface
 {
-    public function getAdapter(): AbstractAdapter;
+    public function getAdapter(): CacheItemPoolInterface;
 }
