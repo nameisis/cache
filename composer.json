@@ -25,6 +25,7 @@
     ],
     "require": {
         "php": "^7.2.9",
+        "ext-json": "*",
         "symfony/cache": "~4.3",
         "symfony/config": "~4.3",
         "symfony/dependency-injection": "~4.3",

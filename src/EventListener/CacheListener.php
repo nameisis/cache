@@ -5,6 +5,7 @@ namespace Nameisis\Cache\EventListener;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\EntityManagerInterface;
+use JsonSerializable;
 use Nameisis\Cache\Annotation\Cache;
 use Nameisis\Cache\DependencyInjection\NameisisCacheExtension;
 use Nameisis\Cache\NameisisCache;
@@ -24,7 +25,6 @@ use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Vairogs\Utils\Exception\VairogsException;
-use Vairogs\Utils\Interfaces\Arrayable;
 use function class_exists;
 use function explode;
 use function in_array;
@@ -223,6 +223,18 @@ class CacheListener implements EventSubscriberInterface
         $input = [];
         if ($annotation = $this->getAnnotation($event)) {
             $request = $event->getRequest();
+
+            $user = null;
+            if (null !== $this->storage && $this->storage->getToken() && $object = $this->storage->getToken()->getUser()) {
+                if ($object instanceof JsonSerializable) {
+                    $user = $object->jsonSerialize();
+                } elseif (method_exists($object, 'toArray')) {
+                    $user = $object->toArray();
+                } elseif (method_exists($object, '__toArray')) {
+                    $user = $object->__toArray();
+                }
+            }
+
             switch ($annotation->getStrategy()) {
                 case Cache::GET:
                     $input = $request->attributes->get('_route_params') + $request->query->all();
@@ -231,15 +243,14 @@ class CacheListener implements EventSubscriberInterface
                     $input = $request->request->all();
                     break;
                 case Cache::USER:
-                    if (null !== $this->storage && $this->storage->getToken() && $this->storage->getToken()->getUser() instanceof Arrayable) {
-                        $input = $this->storage->getToken()->getUser()->toArray();
+                    if (null !== $user) {
+                        $input = $user;
                     }
                     break;
                 case Cache::ALL:
-                    $input = $request->attributes->get('_route_params') + $request->query->all();
-                    $input += $request->request->all();
-                    if (null !== $this->storage && $this->storage->getToken() && $this->storage->getToken()->getUser() instanceof Arrayable) {
-                        $input += $this->storage->getToken()->getUser()->toArray();
+                    $input = $request->attributes->get('_route_params') + $request->query->all() + $request->request->all();
+                    if (null !== $user) {
+                        $input += $user;
                     }
                     break;
                 case Cache::MIXED:
@@ -248,8 +259,8 @@ class CacheListener implements EventSubscriberInterface
                         Cache::GET => $request->attributes->get('_route_params') + $request->query->all(),
                         Cache::POST => $request->request->all(),
                     ];
-                    if (null !== $this->storage && $this->storage->getToken() && $this->storage->getToken()->getUser() instanceof Arrayable) {
-                        $input[Cache::USER] = $this->storage->getToken()->getUser()->toArray();
+                    if (null !== $user) {
+                        $input[Cache::USER] = $user;
                     }
                     break;
             }
