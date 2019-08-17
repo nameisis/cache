@@ -61,20 +61,23 @@ By default @Cache annotation doesn't need any parameters.
 Without **attributes** parameter, cache key for route is made from all of GET and POST parameters.  
 Without **expires** parameter, cache is saved for unlimited ttl which means that it will be valid until deleted.  
 
-If the same parameter exist in multiple methods, value of **GET** parameter will be used.   
+If the same parameter exist in multiple strategies, value of **GET** parameter will be used.   
 
-This bundle supports 4 different methods for saving cache:
+This bundle supports 5 different strategies for saving cache:
 * GET  
 * POST
 * USER
+* ALL
 * MIXED
 
 *GET* and *POST* are pretty obvious, cache are made from GET or POST parameters.  
-*USER* method has to have TokenStorageInterface service provided in defined service. This method allows saving cache for 
-any parameter that authorized user have, for example, id or email. In order to use this method, TokenStorage user class must implement 
+*USER* strategy has to have TokenStorageInterface service provided in defined service. This strategy allows saving cache for 
+any parameter that authorized user have, for example, id or email. In order to use this strategy, TokenStorage user class must implement 
 ``Vairogs\\Utils\\Interfaces\\Arrayable``.  
-*MIXED* method just mixes all other methods, so you don't have to list all needed methods like GET, POST, USER, but just use one 
-overall method.  
+*ALL* strategy just mixes all other strategies, so you don't have to list all needed strategies like GET, POST, USER, but just use one 
+overall strategy.  
+*MIXED* strategy is almost the same as ALL strategy, but instead of making one array of all strategies, MIXED can be assigned by specific 
+strategy parameters.  
 
 @Cache annotation takes two optional parameters: expires and attributes.  
 **expires** sets maximum ttl for given cache.   

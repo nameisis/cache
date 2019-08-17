@@ -23,6 +23,7 @@ class Cache
     public const POST = 'POST';
     public const USER = 'USER';
     public const MIXED = 'MIXED';
+    public const ALL = 'ALL';
 
     /**
      * @var integer

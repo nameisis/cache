@@ -235,6 +235,13 @@ class CacheListener implements EventSubscriberInterface
                         $input = $this->storage->getToken()->getUser()->toArray();
                     }
                     break;
+                case Cache::ALL:
+                    $input = $request->attributes->get('_route_params') + $request->query->all();
+                    $input += $request->request->all();
+                    if (null !== $this->storage && $this->storage->getToken() && $this->storage->getToken()->getUser() instanceof Arrayable) {
+                        $input += $this->storage->getToken()->getUser()->toArray();
+                    }
+                    break;
                 case Cache::MIXED:
                 default:
                     $input = [
