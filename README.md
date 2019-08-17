@@ -71,7 +71,8 @@ This bundle supports 4 different methods for saving cache:
 
 *GET* and *POST* are pretty obvious, cache are made from GET or POST parameters.  
 *USER* method has to have TokenStorageInterface service provided in defined service. This method allows saving cache for 
-any parameter that authorized user have, for example, id or email.  
+any parameter that authorized user have, for example, id or email. In order to use this method, TokenStorage user class must implement 
+``Vairogs\\Utils\\Interfaces\\Arrayable``.  
 *MIXED* method just mixes all other methods, so you don't have to list all needed methods like GET, POST, USER, but just use one 
 overall method.  
 
