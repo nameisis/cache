@@ -24,9 +24,9 @@ class NameisisCache extends Bundle
     public const SKIP_CACHE = 'skip';
 
     /**
-     * @return NameisisCacheExtension|ExtensionInterface|null
+     * @return null|ExtensionInterface
      */
-    public function getContainerExtension()
+    public function getContainerExtension(): ?ExtensionInterface
     {
         return $this->extension ?? new NameisisCacheExtension();
     }

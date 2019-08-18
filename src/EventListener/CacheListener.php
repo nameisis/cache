@@ -201,7 +201,7 @@ class CacheListener implements EventSubscriberInterface
      * @throws ReflectionException
      * @throws VairogsException
      */
-    private function getAttributes(KernelEvent $event): array 
+    private function getAttributes(KernelEvent $event): array
     {
         $input = [];
         if ($annotation = $this->getAnnotation($event)) {
@@ -276,6 +276,7 @@ class CacheListener implements EventSubscriberInterface
      *
      * @throws InvalidArgumentException
      * @throws ReflectionException
+     * @throws VairogsException
      */
     public function onKernelRequest(RequestEvent $event): void
     {
@@ -299,6 +300,7 @@ class CacheListener implements EventSubscriberInterface
      *
      * @throws InvalidArgumentException
      * @throws ReflectionException
+     * @throws VairogsException
      */
     public function onKernelResponse(ResponseEvent $event): void
     {

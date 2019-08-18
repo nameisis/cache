@@ -6,6 +6,7 @@ use Exception;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Vairogs\Utils\Iter;
+use function reset;
 
 class NameisisCacheExtension extends Extension
 {
