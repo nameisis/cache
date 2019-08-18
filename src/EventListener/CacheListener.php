@@ -197,10 +197,11 @@ class CacheListener implements EventSubscriberInterface
     /**
      * @param KernelEvent $event
      *
-     * @return array|mixed
+     * @return array
      * @throws ReflectionException
+     * @throws VairogsException
      */
-    private function getAttributes(KernelEvent $event)
+    private function getAttributes(KernelEvent $event): array 
     {
         $input = [];
         if ($annotation = $this->getAnnotation($event)) {
@@ -241,12 +242,13 @@ class CacheListener implements EventSubscriberInterface
                     }
                     break;
                 case Cache::ALL:
-                default:
                     $input = $request->attributes->get('_route_params') + $request->query->all() + $request->request->all();
                     if (null !== $user) {
                         $input += $user;
                     }
                     break;
+                default:
+                    throw new VairogsException(sprintf('Unknown strategy: %s', $annotation->getStrategy()));
             }
         }
 
