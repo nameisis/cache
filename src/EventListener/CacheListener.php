@@ -24,6 +24,7 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 use Vairogs\Utils\Exception\VairogsException;
 use function class_exists;
 use function explode;
+use function get_class;
 use function in_array;
 use function is_array;
 use function method_exists;
@@ -60,36 +61,38 @@ class CacheListener implements EventSubscriberInterface
     protected $storage;
 
     /**
-     * @var ProviderInterface[]
-     */
-    protected $providers;
-
-    /**
      * @param Reader $reader
      * @param ContainerInterface $container
      * @param null|TokenStorageInterface $storage
-     * @param array $providers
+     * @param ProviderInterface[] ...$providers
+     *
+     * @throws VairogsException
      */
     public function __construct(Reader $reader, ContainerInterface $container, ?TokenStorageInterface $storage, ...$providers)
     {
         $this->enabled = $container->getParameter(sprintf('%s.enabled', NameisisCacheExtension::EXTENSION));
         if ($this->enabled) {
-            $this->providers = $providers;
             $this->reader = $reader;
             $this->storage = $storage;
-            $this->client = new ChainAdapter($this->createAdapters());
+            $this->client = new ChainAdapter($this->createAdapters($providers));
             $this->client->prune();
         }
     }
 
     /**
+     * @param ProviderInterface[] $providers
+     *
      * @return CacheItemPoolInterface[]
+     * @throws VairogsException
      */
-    private function createAdapters(): array
+    private function createAdapters(array $providers = []): array
     {
         $adapters = [];
 
-        foreach ($this->providers as $provider) {
+        foreach ($providers as $provider) {
+            if (!$provider instanceof ProviderInterface) {
+                throw new VairogsException(sprintf('Provider %s must implement %s', get_class($provider), ProviderInterface::class));
+            }
             /** @var ProviderInterface $provider */
             $adapters[] = $provider->getAdapter();
         }
@@ -205,7 +208,9 @@ class CacheListener implements EventSubscriberInterface
 
             $user = null;
             if (null !== $this->storage && $this->storage->getToken() && $object = $this->storage->getToken()->getUser()) {
-                if ($object instanceof JsonSerializable) {
+                if (is_array($object)) {
+                    $user = $object;
+                } elseif ($object instanceof JsonSerializable) {
                     $user = $object->jsonSerialize();
                 } elseif (method_exists($object, 'toArray')) {
                     $user = $object->toArray();
