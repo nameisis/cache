@@ -17,7 +17,7 @@ class Cache
     /**
      * @var string
      */
-    private const ALGORITHM = 'sha256';
+    private const ALGORITHM = 'sha1';
 
     public const GET = 'GET';
     public const POST = 'POST';
@@ -43,7 +43,7 @@ class Cache
     /**
      * @var string
      */
-    public $strategy = self::MIXED;
+    public $strategy = self::ALL;
 
     /**
      * @param string $prefix
