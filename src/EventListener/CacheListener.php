@@ -226,20 +226,20 @@ class CacheListener implements EventSubscriberInterface
                         $input = $user;
                     }
                     break;
-                case Cache::ALL:
-                    $input = $request->attributes->get('_route_params') + $request->query->all() + $request->request->all();
-                    if (null !== $user) {
-                        $input += $user;
-                    }
-                    break;
                 case Cache::MIXED:
-                default:
                     $input = [
                         Cache::GET => $request->attributes->get('_route_params') + $request->query->all(),
                         Cache::POST => $request->request->all(),
                     ];
                     if (null !== $user) {
                         $input[Cache::USER] = $user;
+                    }
+                    break;
+                case Cache::ALL:
+                default:
+                    $input = $request->attributes->get('_route_params') + $request->query->all() + $request->request->all();
+                    if (null !== $user) {
+                        $input += $user;
                     }
                     break;
             }
