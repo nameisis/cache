@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Nameisis\Cache\Provider;
+namespace Nameisis\Cache\Adapter;
 
 use Psr\Cache\CacheItemPoolInterface;
 
