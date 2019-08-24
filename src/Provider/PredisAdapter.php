@@ -7,7 +7,7 @@ use Predis\ClientInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
 
-class PredisProvider implements ProviderInterface
+class PredisAdapter implements CacheAdapter
 {
     /**
      * @var Client
@@ -25,7 +25,7 @@ class PredisProvider implements ProviderInterface
     /**
      * @return CacheItemPoolInterface
      */
-    public function getAdapter(): CacheItemPoolInterface
+    public function getCacheItemPool(): CacheItemPoolInterface
     {
         return new RedisAdapter($this->client, '', 0);
     }

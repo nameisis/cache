@@ -4,7 +4,7 @@ namespace Nameisis\Cache\Provider;
 
 use Psr\Cache\CacheItemPoolInterface;
 
-interface ProviderInterface
+interface CacheAdapter
 {
-    public function getAdapter(): CacheItemPoolInterface;
+    public function getCacheItemPool(): CacheItemPoolInterface;
 }

@@ -9,7 +9,7 @@ use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Cache\Adapter\PdoAdapter;
 use function sprintf;
 
-class OrmProvider implements ProviderInterface
+class OrmAdapter implements CacheAdapter
 {
     /**
      * @var EntityManagerInterface
@@ -28,7 +28,7 @@ class OrmProvider implements ProviderInterface
      * @return CacheItemPoolInterface
      * @throws DBALException
      */
-    public function getAdapter(): CacheItemPoolInterface
+    public function getCacheItemPool(): CacheItemPoolInterface
     {
         $table = sprintf('%s_items', NameisisCacheExtension::ALIAS);
         $schema = $this->manager->getConnection()->getSchemaManager();

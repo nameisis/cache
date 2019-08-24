@@ -7,7 +7,7 @@ use JsonSerializable;
 use Nameisis\Cache\Annotation\Cache;
 use Nameisis\Cache\DependencyInjection\NameisisCacheExtension;
 use Nameisis\Cache\NameisisCache;
-use Nameisis\Cache\Provider\ProviderInterface;
+use Nameisis\Cache\Provider\CacheAdapter;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
 use ReflectionClass;
@@ -64,40 +64,48 @@ class CacheListener implements EventSubscriberInterface
      * @param Reader $reader
      * @param ContainerInterface $container
      * @param null|TokenStorageInterface $storage
-     * @param ProviderInterface[] ...$providers
+     * @param CacheAdapter[] ...$adapters
      *
      * @throws VairogsException
      */
-    public function __construct(Reader $reader, ContainerInterface $container, ?TokenStorageInterface $storage, ...$providers)
+    public function __construct(Reader $reader, ContainerInterface $container, ?TokenStorageInterface $storage, ...$adapters)
     {
         $this->enabled = $container->getParameter(sprintf('%s.enabled', NameisisCacheExtension::EXTENSION));
         if ($this->enabled) {
             $this->reader = $reader;
             $this->storage = $storage;
-            $this->client = new ChainAdapter($this->createAdapters($providers));
+            $this->client = new ChainAdapter($this->createPool($adapters));
             $this->client->prune();
         }
     }
 
     /**
-     * @param ProviderInterface[] $providers
+     * @param CacheAdapter[] $adapters
      *
      * @return CacheItemPoolInterface[]
      * @throws VairogsException
      */
-    private function createAdapters(array $providers = []): array
+    private function createPool(array $adapters = []): array
     {
-        $adapters = [];
+        $pool = [];
 
-        foreach ($providers as $provider) {
-            if (!$provider instanceof ProviderInterface) {
-                throw new VairogsException(sprintf('Provider %s must implement %s', get_class($provider), ProviderInterface::class));
+        foreach ($adapters as $adapter) {
+            if (null === $adapter) {
+                continue;
             }
-            /** @var ProviderInterface $provider */
-            $adapters[] = $provider->getAdapter();
+
+            if (!$adapter instanceof CacheAdapter) {
+                throw new VairogsException(sprintf('Adapter %s must implement %s', get_class($adapter), CacheAdapter::class));
+            }
+            /** @var CacheAdapter $provider */
+            $pool[] = $adapter->getCacheItemPool();
         }
 
-        return $adapters;
+        if ([] === $pool) {
+            throw new VairogsException(sprintf('At least one provider must be provided in order to use %s', Cache::class));
+        }
+
+        return $pool;
     }
 
     /**
