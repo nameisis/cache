@@ -7,7 +7,7 @@ use JsonSerializable;
 use Nameisis\Cache\Annotation\Cache;
 use Nameisis\Cache\DependencyInjection\NameisisCacheExtension;
 use Nameisis\Cache\NameisisCache;
-use Nameisis\Cache\Adapter\CacheAdapter;
+use Nameisis\Adapter\Cache\CacheAdapter;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
 use ReflectionClass;
