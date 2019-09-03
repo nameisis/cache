@@ -34,15 +34,9 @@
         "symfony/http-kernel": "~4.3",
         "symfony/security-core": "~4.3",
         "doctrine/annotations": "~1.6",
-        "doctrine/dbal": "~2.6",
-        "doctrine/orm": "~2.6",
-        "predis/predis": "~1.1",
         "psr/cache": "^1",
         "vairogs/vairogs-utils": "2.x-dev|^2.1.2",
         "nameisis/adapter": "1.x-dev|^1.0.0"
-    },
-    "suggest": {
-        "snc/redis-bundle": "For easier Predis client configuration"
     },
     "autoload": {
         "psr-4": {
