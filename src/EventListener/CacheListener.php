@@ -5,6 +5,7 @@ namespace Nameisis\Cache\EventListener;
 use Doctrine\Common\Annotations\Reader;
 use JsonSerializable;
 use Nameisis\Adapter\Cache\CacheAdapter;
+use Nameisis\Adapter\Utils\Pool;
 use Nameisis\Cache\Annotation\Cache;
 use Nameisis\Cache\DependencyInjection\NameisisCacheExtension;
 use Nameisis\Cache\NameisisCache;
@@ -62,55 +63,21 @@ class CacheListener implements EventSubscriberInterface
 
     /**
      * @param Reader $reader
-     * @param ContainerInterface $container
+     * @param bool $enabled
      * @param null|TokenStorageInterface $storage
      * @param CacheAdapter[] ...$adapters
      *
      * @throws VairogsException
      */
-    public function __construct(Reader $reader, ContainerInterface $container, ?TokenStorageInterface $storage, ...$adapters)
+    public function __construct(Reader $reader, bool $enabled, ?TokenStorageInterface $storage, ...$adapters)
     {
-        $this->enabled = $container->getParameter(sprintf('%s.enabled', NameisisCacheExtension::EXTENSION));
+        $this->enabled = $enabled;
         if ($this->enabled) {
             $this->reader = $reader;
             $this->storage = $storage;
-            $this->client = new ChainAdapter($this->createPool($adapters));
+            $this->client = new ChainAdapter(Pool::createPoolFor(Cache::class, $adapters));
             $this->client->prune();
         }
-    }
-
-    /**
-     * @param CacheAdapter[] $adapters
-     *
-     * @return CacheItemPoolInterface[]
-     * @throws VairogsException
-     */
-    private function createPool(array $adapters = []): array
-    {
-        $pool = [];
-
-        foreach ($adapters as $adapter) {
-            if (null === $adapter) {
-                continue;
-            }
-
-            if (!$adapter instanceof CacheAdapter && !$adapter instanceof CacheItemPoolInterface) {
-                throw new VairogsException(sprintf('Adapter %s must implement %s or %s', get_class($adapter), CacheAdapter::class, CacheItemPoolInterface::class));
-            }
-
-            if ($adapter instanceof CacheAdapter) {
-                /** @var CacheAdapter $provider */
-                $pool[] = $adapter->getCacheItemPool();
-            } else {
-                $pool = $adapter;
-            }
-        }
-
-        if ([] === $pool) {
-            throw new VairogsException(sprintf('At least one provider must be provided in order to use %s', Cache::class));
-        }
-
-        return $pool;
     }
 
     /**
