@@ -37,9 +37,9 @@ class NameisisCacheExtension extends Extension
     public function load(array $configs, ContainerBuilder $container): void
     {
         $configuration = new Configuration($this->getAlias());
-        $this->processConfiguration($configuration, $configs);
+        $parameters = $this->processConfiguration($configuration, $configs);
 
-        foreach (Iter::makeOneDimension(reset($configs), self::EXTENSION) as $key => $value) {
+        foreach (Iter::makeOneDimension($parameters, self::EXTENSION) as $key => $value) {
             $container->setParameter($key, $value);
         }
     }
