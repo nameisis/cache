@@ -4,10 +4,10 @@ namespace Nameisis\Cache\EventListener;
 
 use Doctrine\Common\Annotations\Reader;
 use JsonSerializable;
+use Nameisis\Adapter\Cache\CacheAdapter;
 use Nameisis\Cache\Annotation\Cache;
 use Nameisis\Cache\DependencyInjection\NameisisCacheExtension;
 use Nameisis\Cache\NameisisCache;
-use Nameisis\Adapter\Cache\CacheAdapter;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
 use ReflectionClass;
@@ -94,11 +94,16 @@ class CacheListener implements EventSubscriberInterface
                 continue;
             }
 
-            if (!$adapter instanceof CacheAdapter) {
-                throw new VairogsException(sprintf('Adapter %s must implement %s', get_class($adapter), CacheAdapter::class));
+            if (!$adapter instanceof CacheAdapter && !$adapter instanceof CacheItemPoolInterface) {
+                throw new VairogsException(sprintf('Adapter %s must implement %s or %s', get_class($adapter), CacheAdapter::class, CacheItemPoolInterface::class));
             }
-            /** @var CacheAdapter $provider */
-            $pool[] = $adapter->getCacheItemPool();
+
+            if ($adapter instanceof CacheAdapter) {
+                /** @var CacheAdapter $provider */
+                $pool[] = $adapter->getCacheItemPool();
+            } else {
+                $pool = $adapter;
+            }
         }
 
         if ([] === $pool) {
