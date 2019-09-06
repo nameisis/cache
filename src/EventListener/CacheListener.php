@@ -3,13 +3,12 @@
 namespace Nameisis\Cache\EventListener;
 
 use Doctrine\Common\Annotations\Reader;
-use JsonSerializable;
-use Nameisis\Adapter\Cache\CacheAdapter;
-use Nameisis\Adapter\Utils\Pool;
+use Nameisis\Utils\Utils\Request;
 use Nameisis\Cache\Annotation\Cache;
 use Nameisis\Cache\NameisisCache;
+use Nameisis\Utils\Cache\Adapter\CacheAdapter;
+use Nameisis\Utils\Utils\Pool;
 use Psr\Cache\InvalidArgumentException;
-use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\Cache\Adapter\ChainAdapter;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -21,11 +20,8 @@ use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Vairogs\Utils\Exception\VairogsException;
 use function class_exists;
-use function explode;
 use function in_array;
-use function is_array;
 use function method_exists;
-use function sprintf;
 use const false;
 use const null;
 use const true;
@@ -43,19 +39,14 @@ class CacheListener implements EventSubscriberInterface
     protected $client;
 
     /**
-     * @var Reader
-     */
-    protected $reader;
-
-    /**
      * @var bool
      */
     protected $enabled;
 
     /**
-     * @var null|TokenStorageInterface
+     * @var Request
      */
-    protected $storage;
+    protected $request;
 
     /**
      * @param Reader $reader
@@ -69,10 +60,9 @@ class CacheListener implements EventSubscriberInterface
     {
         $this->enabled = $enabled;
         if ($this->enabled) {
-            $this->reader = $reader;
-            $this->storage = $storage;
             $this->client = new ChainAdapter(Pool::createPoolFor(Cache::class, $adapters));
             $this->client->prune();
+            $this->request = new Request($reader, $storage);
         }
     }
 
@@ -104,8 +94,8 @@ class CacheListener implements EventSubscriberInterface
             return;
         }
 
-        if ($annotation = $this->getAnnotation($event)) {
-            $annotation->setData($this->getAttributes($event));
+        if ($annotation = $this->request->getAnnotation($event, Cache::class)) {
+            $annotation->setData($this->request->getAttributes($event, Cache::class));
             /* @var $annotation Cache */
             $response = $this->getCache($annotation->getKey($event->getRequest()->get(self::ROUTE)));
             if (null !== $response) {
@@ -131,104 +121,11 @@ class CacheListener implements EventSubscriberInterface
             return false;
         }
 
-        if (empty($controller = $this->getController($event)) || !class_exists($controller[0])) {
+        if (empty($controller = $this->request->getController($event)) || !class_exists($controller[0])) {
             return false;
         }
 
         return true;
-    }
-
-    /**
-     * @param KernelEvent $event
-     *
-     * @return array
-     */
-    private function getController(KernelEvent $event): array
-    {
-        if (is_array($controller = explode('::', $event->getRequest()->get('_controller'), 2)) && isset($controller[1])) {
-            return $controller;
-        }
-
-        return [];
-    }
-
-    /**
-     * @param KernelEvent $event
-     *
-     * @return null|object
-     * @throws ReflectionException
-     */
-    private function getAnnotation(KernelEvent $event): ?object
-    {
-        $controller = $this->getController($event);
-        $controllerClass = new ReflectionClass(reset($controller));
-
-        if ($method = $controllerClass->getMethod(end($controller))) {
-            return $this->reader->getMethodAnnotation($method, Cache::class);
-        }
-
-        return null;
-    }
-
-    /**
-     * @param KernelEvent $event
-     *
-     * @return array
-     * @throws ReflectionException
-     * @throws VairogsException
-     */
-    private function getAttributes(KernelEvent $event): array
-    {
-        $input = [];
-        if ($annotation = $this->getAnnotation($event)) {
-            $request = $event->getRequest();
-
-            $user = null;
-            if (null !== $this->storage && $this->storage->getToken() && $object = $this->storage->getToken()->getUser()) {
-                if (is_array($object)) {
-                    $user = $object;
-                } elseif ($object instanceof JsonSerializable) {
-                    $user = $object->jsonSerialize();
-                } elseif (method_exists($object, 'toArray')) {
-                    $user = $object->toArray();
-                } elseif (method_exists($object, '__toArray')) {
-                    $user = $object->__toArray();
-                }
-            }
-
-            switch ($annotation->getStrategy()) {
-                case Cache::GET:
-                    $input = $request->attributes->get('_route_params') + $request->query->all();
-                    break;
-                case Cache::POST:
-                    $input = $request->request->all();
-                    break;
-                case Cache::USER:
-                    if (null !== $user) {
-                        $input = $user;
-                    }
-                    break;
-                case Cache::MIXED:
-                    $input = [
-                        Cache::GET => $request->attributes->get('_route_params') + $request->query->all(),
-                        Cache::POST => $request->request->all(),
-                    ];
-                    if (null !== $user) {
-                        $input[Cache::USER] = $user;
-                    }
-                    break;
-                case Cache::ALL:
-                    $input = $request->attributes->get('_route_params') + $request->query->all() + $request->request->all();
-                    if (null !== $user) {
-                        $input += $user;
-                    }
-                    break;
-                default:
-                    throw new VairogsException(sprintf('Unknown strategy: %s', $annotation->getStrategy()));
-            }
-        }
-
-        return $input;
     }
 
     /**
@@ -264,8 +161,8 @@ class CacheListener implements EventSubscriberInterface
         if (null !== $invalidate && in_array($invalidate, [
                 NameisisCache::INVALIDATE_CACHE,
                 NameisisCache::SKIP_CACHE,
-            ], true) && $annotation = $this->getAnnotation($event)) {
-            $annotation->setData($this->getAttributes($event));
+            ], true) && $annotation = $this->request->getAnnotation($event, Cache::class)) {
+            $annotation->setData($this->request->getAttributes($event, Cache::class));
             $key = $annotation->getKey($event->getRequest()->get(self::ROUTE));
             $this->client->deleteItem($key);
         }
@@ -284,8 +181,8 @@ class CacheListener implements EventSubscriberInterface
             return;
         }
 
-        if ($annotation = $this->getAnnotation($event)) {
-            $annotation->setData($this->getAttributes($event));
+        if ($annotation = $this->request->getAnnotation($event, Cache::class)) {
+            $annotation->setData($this->request->getAttributes($event, Cache::class));
             $key = $annotation->getKey($event->getRequest()->get(self::ROUTE));
             $cache = $this->getCache($key);
             $skip = NameisisCache::SKIP_CACHE === $event->getRequest()->headers->get(NameisisCache::CACHE_HEADER);

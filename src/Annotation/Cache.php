@@ -2,6 +2,8 @@
 
 namespace Nameisis\Cache\Annotation;
 
+use Doctrine\Common\Annotations\Annotation;
+use Nameisis\Utils\Utils\Strategy;
 use Vairogs\Utils\Exception\VairogsException;
 use Vairogs\Utils\Iter;
 use function hash;
@@ -11,6 +13,7 @@ use function str_replace;
 
 /**
  * @Annotation
+ * @Annotation\Target({"METHOD"})
  */
 class Cache
 {
@@ -18,12 +21,6 @@ class Cache
      * @var string
      */
     private const ALGORITHM = 'sha1';
-
-    public const GET = 'GET';
-    public const POST = 'POST';
-    public const USER = 'USER';
-    public const MIXED = 'MIXED';
-    public const ALL = 'ALL';
 
     /**
      * @var integer
@@ -43,7 +40,7 @@ class Cache
     /**
      * @var string
      */
-    public $strategy = self::ALL;
+    public $strategy = Strategy::ALL;
 
     /**
      * @param string $prefix
