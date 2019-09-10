@@ -3,15 +3,16 @@
 namespace Nameisis\Cache\EventListener;
 
 use Doctrine\Common\Annotations\Reader;
-use Nameisis\Utils\Utils\Request;
 use Nameisis\Cache\Annotation\Cache;
 use Nameisis\Cache\NameisisCache;
 use Nameisis\Utils\Cache\Adapter\CacheAdapter;
+use Nameisis\Utils\Utils\Attribute;
 use Nameisis\Utils\Utils\Pool;
 use Psr\Cache\InvalidArgumentException;
 use ReflectionException;
 use Symfony\Component\Cache\Adapter\ChainAdapter;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 use Symfony\Component\HttpKernel\Event\KernelEvent;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -28,6 +29,11 @@ use const true;
 
 class CacheListener implements EventSubscriberInterface
 {
+    private const HEADERS = [
+        NameisisCache::INVALIDATE_CACHE,
+        NameisisCache::SKIP_CACHE,
+    ];
+
     /**
      * @var string
      */
@@ -44,9 +50,9 @@ class CacheListener implements EventSubscriberInterface
     protected $enabled;
 
     /**
-     * @var Request
+     * @var Attribute
      */
-    protected $request;
+    protected $attribute;
 
     /**
      * @param Reader $reader
@@ -62,7 +68,7 @@ class CacheListener implements EventSubscriberInterface
         if ($this->enabled) {
             $this->client = new ChainAdapter(Pool::createPoolFor(Cache::class, $adapters));
             $this->client->prune();
-            $this->request = new Request($reader, $storage);
+            $this->attribute = new Attribute($reader, $storage);
         }
     }
 
@@ -94,8 +100,8 @@ class CacheListener implements EventSubscriberInterface
             return;
         }
 
-        if ($annotation = $this->request->getAnnotation($event, Cache::class)) {
-            $annotation->setData($this->request->getAttributes($event, Cache::class));
+        if ($annotation = $this->attribute->getAnnotation($event, Cache::class)) {
+            $annotation->setData($this->attribute->getAttributes($event, Cache::class));
             /* @var $annotation Cache */
             $response = $this->getCache($annotation->getKey($event->getRequest()->get(self::ROUTE)));
             if (null !== $response) {
@@ -121,7 +127,7 @@ class CacheListener implements EventSubscriberInterface
             return false;
         }
 
-        if (empty($controller = $this->request->getController($event)) || !class_exists($controller[0])) {
+        if (empty($controller = $this->attribute->getController($event)) || !class_exists($controller[0])) {
             return false;
         }
 
@@ -157,15 +163,22 @@ class CacheListener implements EventSubscriberInterface
             return;
         }
 
-        $invalidate = $event->getRequest()->headers->get(NameisisCache::CACHE_HEADER);
-        if (null !== $invalidate && in_array($invalidate, [
-                NameisisCache::INVALIDATE_CACHE,
-                NameisisCache::SKIP_CACHE,
-            ], true) && $annotation = $this->request->getAnnotation($event, Cache::class)) {
-            $annotation->setData($this->request->getAttributes($event, Cache::class));
+        if (($annotation = $this->attribute->getAnnotation($event, Cache::class)) && $this->needsInvalidation($event->getRequest())) {
+            $annotation->setData($this->attribute->getAttributes($event, Cache::class));
             $key = $annotation->getKey($event->getRequest()->get(self::ROUTE));
             $this->client->deleteItem($key);
         }
+    }
+
+    private function needsInvalidation(Request $request): bool
+    {
+        if ($request->getMethod() === Request::METHOD_PURGE) {
+            return true;
+        }
+
+        $invalidate = $request->headers->get(NameisisCache::CACHE_HEADER);
+
+        return null !== $invalidate && in_array($invalidate, self::HEADERS, true);
     }
 
     /**
@@ -181,8 +194,8 @@ class CacheListener implements EventSubscriberInterface
             return;
         }
 
-        if ($annotation = $this->request->getAnnotation($event, Cache::class)) {
-            $annotation->setData($this->request->getAttributes($event, Cache::class));
+        if ($annotation = $this->attribute->getAnnotation($event, Cache::class)) {
+            $annotation->setData($this->attribute->getAttributes($event, Cache::class));
             $key = $annotation->getKey($event->getRequest()->get(self::ROUTE));
             $cache = $this->getCache($key);
             $skip = NameisisCache::SKIP_CACHE === $event->getRequest()->headers->get(NameisisCache::CACHE_HEADER);
